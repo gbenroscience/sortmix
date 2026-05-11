@@ -141,7 +141,7 @@ public class ModernWittyBucketSort {
     static double[]masterData = null;
     
     public static void main(String[] args) {
-        int n = 24_000_000;
+        int n = 1_000_000;
         System.out.println("Benchmarking with " + n + " elements...\n");
 
         // Generate master data
