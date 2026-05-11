@@ -141,7 +141,7 @@ public class ModernWittyBucketSort {
     static double[]masterData = null;
     
     public static void main(String[] args) {
-        int n = 1_000_000;
+        int n = 100_000_000;
         System.out.println("Benchmarking with " + n + " elements...\n");
 
         // Generate master data
@@ -151,22 +151,22 @@ public class ModernWittyBucketSort {
         System.out.println("DATA-TYPE----initArrayPos$NegRandomFloats");
 
         // Run benchmarks
-        runBenchmark("ModernWittyBucketSort", () -> sort(clone(masterData)));
         runBenchmark("AdvancedWittyBucketSort", () -> AdvancedWittyBucketSort.sort(clone(masterData)));
         runBenchmark("QuickSort", () -> QuickSort.sort(clone(masterData)));
         runBenchmark("MergeSort", () -> MergeSort.sort(clone(masterData)));
         runBenchmark("java.util.Arrays.sort", () -> Arrays.sort(clone(masterData))); 
+        runBenchmark("ModernWittyBucketSort", () -> sort(clone(masterData)));
         
         masterData = BenchMarker.initArrayRandomFloats(n);
         
         System.out.println("DATA-TYPE----initArrayRandomFloats");
 
         // Run benchmarks
-        runBenchmark("ModernWittyBucketSort", () -> sort(clone(masterData)));
         runBenchmark("AdvancedWittyBucketSort", () -> AdvancedWittyBucketSort.sort(clone(masterData)));
         runBenchmark("QuickSort", () -> QuickSort.sort(clone(masterData)));
         runBenchmark("MergeSort", () -> MergeSort.sort(clone(masterData)));
         runBenchmark("java.util.Arrays.sort", () -> Arrays.sort(clone(masterData))); 
+        runBenchmark("ModernWittyBucketSort", () -> sort(clone(masterData)));
         
         
         
@@ -175,11 +175,11 @@ public class ModernWittyBucketSort {
         System.out.println("DATA-TYPE----initArrayReverseSortedFloats");
 
         // Run benchmarks
-        runBenchmark("ModernWittyBucketSort", () -> sort(clone(masterData)));
         runBenchmark("AdvancedWittyBucketSort", () -> AdvancedWittyBucketSort.sort(clone(masterData)));
         runBenchmark("QuickSort", () -> QuickSort.sort(clone(masterData)));
         runBenchmark("MergeSort", () -> MergeSort.sort(clone(masterData)));
         runBenchmark("java.util.Arrays.sort", () -> Arrays.sort(clone(masterData))); 
+        runBenchmark("ModernWittyBucketSort", () -> sort(clone(masterData)));
         
         
         masterData = BenchMarker.initArraySortedFloats(n);
@@ -187,11 +187,11 @@ public class ModernWittyBucketSort {
         System.out.println("DATA-TYPE----initArraySortedFloats");
 
         // Run benchmarks
-        runBenchmark("ModernWittyBucketSort", () -> sort(clone(masterData)));
         runBenchmark("AdvancedWittyBucketSort", () -> AdvancedWittyBucketSort.sort(clone(masterData)));
         runBenchmark("QuickSort", () -> QuickSort.sort(clone(masterData)));
         runBenchmark("MergeSort", () -> MergeSort.sort(clone(masterData)));
         runBenchmark("java.util.Arrays.sort", () -> Arrays.sort(clone(masterData))); 
+        runBenchmark("ModernWittyBucketSort", () -> sort(clone(masterData)));
         
         
         masterData = BenchMarker.initBinaryArrayFloats(n, 10, 20);
@@ -199,11 +199,11 @@ public class ModernWittyBucketSort {
         System.out.println("DATA-TYPE----initBinaryArrayFloats");
         
         // Run benchmarks
-        runBenchmark("ModernWittyBucketSort", () -> sort(clone(masterData)));
         runBenchmark("AdvancedWittyBucketSort", () -> AdvancedWittyBucketSort.sort(clone(masterData)));
         runBenchmark("QuickSort", () -> QuickSort.sort(clone(masterData)));
         runBenchmark("MergeSort", () -> MergeSort.sort(clone(masterData)));
         runBenchmark("java.util.Arrays.sort", () -> Arrays.sort(clone(masterData))); 
+        runBenchmark("ModernWittyBucketSort", () -> sort(clone(masterData)));
         
         
                 
@@ -213,11 +213,11 @@ public class ModernWittyBucketSort {
         System.out.println("DATA-TYPE----initPartiallySortedArrayFloats");
         
         // Run benchmarks
-        runBenchmark("ModernWittyBucketSort", () -> sort(clone(masterData)));
         runBenchmark("AdvancedWittyBucketSort", () -> AdvancedWittyBucketSort.sort(clone(masterData)));
         runBenchmark("QuickSort", () -> QuickSort.sort(clone(masterData)));
         runBenchmark("MergeSort", () -> MergeSort.sort(clone(masterData)));
         runBenchmark("java.util.Arrays.sort", () -> Arrays.sort(clone(masterData))); 
+        runBenchmark("ModernWittyBucketSort", () -> sort(clone(masterData)));
         
         
         
