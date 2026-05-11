@@ -39,7 +39,7 @@ At enterprise-scale data volumes, comparison-based sorts become heavily bottlene
 | **Partially Sorted**| **8.9 seconds** | 11.6 seconds | **+ 23% Faster** |
 
 **Memory Efficiency at Scale:** 
-To sort 800 MB of data, standard `MergeSort` requires an additional 800 MB of RAM. **ModernWittyBucketSort** completed the task with only **~129 MB** of peak overhead, proving its highly efficient quasi-$O(1)$ spatial footprint even under immense loads.
+To sort 800 MB of data, standard `MergeSort` requires an additional 800 MB of RAM. **ModernWittyBucketSort** completed the task with only **~129 MB** of peak overhead, proving its highly efficient quasi-O(1) spatial footprint even under immense loads.
 
 ## 🧠 The "Wit" (Architectural Highlights)
 
