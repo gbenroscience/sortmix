@@ -19,6 +19,15 @@ In a head-to-head stress test with **24,000,000** elements, **ModernWittyBucketS
 
 > **Note:** ModernWitty is roughly **42% faster** than the Java Standard Library on random floating-point data.
 
+### 📈 Performance at a smaller scale: 1,000,000 Elements
+For standard application-sized datasets, ModernWitty remains the most efficient choice for unsorted data.
+
+| Data Type | ModernWitty | Arrays.sort | Speedup |
+| :--- | :--- | :--- | :--- |
+| Random Floats | **65 ms** | 106 ms | +38% |
+| Partially Sorted | **66 ms** | 104 ms | +36% |
+| Binary (10/20) | 31 ms | **22 ms** | -28% |
+
 ---
 
 ## 🧠 The "Wit" (Architectural Highlights)
