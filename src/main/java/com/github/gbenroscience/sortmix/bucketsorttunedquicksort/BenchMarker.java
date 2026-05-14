@@ -51,12 +51,7 @@ public class BenchMarker {
         }
         return arr;
     }
-    
-  
-   
-   
-    
-
+     
     /**
      * @param len the array size.
      * @return an array with <code>len</code> integer entries, randomly filled with values from 0 to 9.

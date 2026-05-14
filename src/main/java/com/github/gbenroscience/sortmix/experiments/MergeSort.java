@@ -10,176 +10,102 @@ import static com.github.gbenroscience.sortmix.util.SortUtils.*;
 
 public class MergeSort {
 
-    private static int recursions = -1;
-    private static double[] combined; // working array
-    private static int[] combined_int; // working array
+   // ====================== PUBLIC API ======================
 
-    // calls recursive split method to begin merge sorting
-    public static void sort(double sortJob[]) {
-        combined = new double[sortJob.length];
-        sortArray(sortJob, 0, sortJob.length - 1); // split entire array
-        combined = null;
-    } // end method sort
+    public static void sort(double[] sortJob) {
+        if (sortJob == null || sortJob.length <= 1) return;
+        double[] aux = new double[sortJob.length];   // One temporary array
+        sort(sortJob, aux, 0, sortJob.length - 1);
+    }
 
-    // calls recursive split method to begin merge sorting
-    /**
-     *
-     * @param sortJob the array to sort
-     * @param left the starting index of the sort
-     * @param right the final index of the sort
-     */
-    public static void sort(double sortJob[], int left, int right) {
-        combined = new double[right - left + 1];
-        sortArray(sortJob, left, right);
-        combined = null;
-    } // end method sort
+    public static void sort(double[] sortJob, int left, int right) {
+        if (sortJob == null || right - left < 1) return;
+        double[] aux = new double[right - left + 1];
+        sort(sortJob, aux, left, right);
+    }
 
-    // splits array, sorts subarrays and merges subarrays into sorted array
-    private static void sortArray(double[] sortJob, int low, int high) {
+    // ====================== Integer overloads ======================
 
-        ++recursions;
-        // test base case; size of array equals 1     
-        if ((high - low) >= 1) // if not base case
-        {
-            int middle1 = (low + high) / 2; // calculate middle of array
-            int middle2 = middle1 + 1; // calculate next element over     
-            /*
-             // output split step
-             System.out.println( "split:   " + subarray( low, high ) );
-             System.out.println( "         " + subarray( low, middle1 ) );
-             System.out.println( "         " + subarray( middle2, high ) );
-             System.out.println();
-             */
-            // split array in half; sort each half (recursive calls)
-            sortArray(sortJob, low, middle1); // first half of array       
-            sortArray(sortJob, middle2, high); // second half of array     
+    public static void sort(int[] sortJob) {
+        if (sortJob == null || sortJob.length <= 1) return;
+        int[] aux = new int[sortJob.length];
+        sort(sortJob, aux, 0, sortJob.length - 1);
+    }
 
-            // merge two sorted arrays after split calls return
-            merge(sortJob, low, middle1, middle2, high);
-        } // end if                                           
-    } // end method split                                    
+    public static void sort(int[] sortJob, int left, int right) {
+        if (sortJob == null || right - left < 1) return;
+        int[] aux = new int[right - left + 1];
+        sort(sortJob, aux, left, right);
+    }
 
-    // merge two sorted subarrays into one sorted subarray             
-    private static void merge(double sortJob[], int left, int middle1, int middle2, int right) {
-        int leftIndex = left; // index into left subarray              
-        int rightIndex = middle2; // index into right subarray         
-        int combinedIndex = left; // index into temporary working array
+    // ====================== PRIVATE RECURSIVE METHODS ======================
 
-        /*   // output two subarrays before merging
-          System.out.println( "merge:   " + subarray( left, middle1 ) );
-          System.out.println( "         " + subarray( middle2, right ) );
-         */
-        // merge arrays until reaching end of either         
-        while (leftIndex <= middle1 && rightIndex <= right) {
-            // place smaller of two current elements into result  
-            // and move to next space in arrays                   
-            if (sortJob[leftIndex] <= sortJob[rightIndex]) {
-                combined[combinedIndex++ - left] = sortJob[leftIndex++];
+    private static void sort(double[] arr, double[] aux, int low, int high) {
+        if (low >= high) return;
+
+        int mid = low + (high - low) / 2;
+
+        sort(arr, aux, low, mid);
+        sort(arr, aux, mid + 1, high);
+
+        merge(arr, aux, low, mid, high);
+    }
+
+    private static void merge(double[] arr, double[] aux, int low, int mid, int high) {
+        // Copy to auxiliary array
+        System.arraycopy(arr, low, aux, low, high - low + 1);
+
+        int left = low;
+        int right = mid + 1;
+        int current = low;
+
+        while (left <= mid && right <= high) {
+            if (aux[left] <= aux[right]) {
+                arr[current++] = aux[left++];
             } else {
-                combined[combinedIndex++ - left] = sortJob[rightIndex++];
-            }
-        } // end while                                           
-
-        // if left array is empty                                
-        if (leftIndex == middle2) {
-            // copy in rest of right array                        
-            while (rightIndex <= right) {
-                combined[combinedIndex++ - left] = sortJob[rightIndex++];
-            }
-        } else // right array is empty                             
-        // copy in rest of left array                         
-        {
-            while (leftIndex <= middle1) {
-                combined[combinedIndex++ - left] = sortJob[leftIndex++];
+                arr[current++] = aux[right++];
             }
         }
-        // copy values back into original array
-        System.arraycopy(combined, 0, sortJob, left, right - left + 1);
-    } // end method merge       
 
-    // calls recursive split method to begin merge sorting
-    public static void sort(int sortJob[]) {
-        combined_int = new int[sortJob.length];
-        sortArray(sortJob, 0, sortJob.length - 1); // split entire array
-        combined_int = null;
-    } // end method sort
+        // Copy remaining elements from left half
+        while (left <= mid) {
+            arr[current++] = aux[left++];
+        }
+        // Right half elements are already in place (no need to copy)
+    }
 
-    // calls recursive split method to begin merge sorting
-    /**
-     *
-     * @param sortJob the array to sort
-     * @param left the starting index of the sort
-     * @param right the final index of the sort
-     */
-    public static void sort(int sortJob[], int left, int right) {
-        combined_int = new int[right - left + 1];
-        sortArray(sortJob, left, right);
-        combined_int = null;
-    } // end method sort
+    // ====================== Integer version ======================
 
-    // splits array, sorts subarrays and merges subarrays into sorted array
-    private static void sortArray(int[] sortJob, int low, int high) {
+    private static void sort(int[] arr, int[] aux, int low, int high) {
+        if (low >= high) return;
 
-        ++recursions;
-        // test base case; size of array equals 1     
-        if ((high - low) >= 1) // if not base case
-        {
-            int middle1 = (low + high) / 2; // calculate middle of array
-            int middle2 = middle1 + 1; // calculate next element over     
-            /*
-             // output split step
-             System.out.println( "split:   " + subarray( low, high ) );
-             System.out.println( "         " + subarray( low, middle1 ) );
-             System.out.println( "         " + subarray( middle2, high ) );
-             System.out.println();
-             */
-            // split array in half; sort each half (recursive calls)
-            sortArray(sortJob, low, middle1); // first half of array       
-            sortArray(sortJob, middle2, high); // second half of array     
+        int mid = low + (high - low) / 2;
 
-            // merge two sorted arrays after split calls return
-            merge(sortJob, low, middle1, middle2, high);
-        } // end if                                           
-    } // end method split           
+        sort(arr, aux, low, mid);
+        sort(arr, aux, mid + 1, high);
 
-    // merge two sorted subarrays into one sorted subarray             
-    private static void merge(int sortJob[], int left, int middle1, int middle2, int right) {
-        int leftIndex = left; // index into left subarray              
-        int rightIndex = middle2; // index into right subarray         
-        int combinedIndex = left; // index into temporary working array
+        merge(arr, aux, low, mid, high);
+    }
 
-        /*   // output two subarrays before merging
-          System.out.println( "merge:   " + subarray( left, middle1 ) );
-          System.out.println( "         " + subarray( middle2, right ) );
-         */
-        // merge arrays until reaching end of either         
-        while (leftIndex <= middle1 && rightIndex <= right) {
-            // place smaller of two current elements into result  
-            // and move to next space in arrays                   
-            if (sortJob[leftIndex] <= sortJob[rightIndex]) {
-                combined_int[combinedIndex++ - left] = sortJob[leftIndex++];
+    private static void merge(int[] arr, int[] aux, int low, int mid, int high) {
+        System.arraycopy(arr, low, aux, low, high - low + 1);
+
+        int left = low;
+        int right = mid + 1;
+        int current = low;
+
+        while (left <= mid && right <= high) {
+            if (aux[left] <= aux[right]) {
+                arr[current++] = aux[left++];
             } else {
-                combined_int[combinedIndex++ - left] = sortJob[rightIndex++];
-            }
-        } // end while                                           
-
-        // if left array is empty                                
-        if (leftIndex == middle2) {
-            // copy in rest of right array                        
-            while (rightIndex <= right) {
-                combined_int[combinedIndex++ - left] = sortJob[rightIndex++];
-            }
-        } else // right array is empty                             
-        // copy in rest of left array                         
-        {
-            while (leftIndex <= middle1) {
-                combined_int[combinedIndex++ - left] = sortJob[leftIndex++];
+                arr[current++] = aux[right++];
             }
         }
-        // copy values back into original array
-        System.arraycopy(combined_int, 0, sortJob, left, right - left + 1);
-    } // end method merge 
 
+        while (left <= mid) {
+            arr[current++] = aux[left++];
+        }
+    }
     public static void main1(String[] args) {
         int len = 22343533;//17907000; //8940705;
         //double arr[] = new double[80];
@@ -189,7 +115,7 @@ public class MergeSort {
         double start = System.nanoTime();
         MergeSort.sort(arr);//.sort(arr);
         start = (System.nanoTime() - start) / 1.0E6;
-        printObject(len + " items sorted using MergeSort in " + start + "ms, recursions = " + MergeSort.recursions);
+        printObject(len + " items sorted using MergeSort in " + start + "ms");
 
         if (checkSortState(arr, 0, len - 1)[2] == 0) {
             System.out.println("Sorted!");
@@ -203,11 +129,12 @@ public class MergeSort {
 
     public static void main(String[] args) {
         System.out.println("com.github.gbenroscience.sortmix.experiments.MergeSort.main()");
-        int n = 24_000_000;
+        int n = 100_000_000;
         double[] data = new double[n];
         for (int i = 0; i < n; i++) {
             data[i] = Math.random() * 1000;
         }
+        //QuickSort.sort(data);
 
         long start = System.currentTimeMillis();
         sort(data);
