@@ -6,13 +6,11 @@ package com.github.gbenroscience.sortmix.experiments;
  */
 import com.github.gbenroscience.sortmix.bucketsorttunedquicksort.BenchMarker;
 import static com.github.gbenroscience.sortmix.experiments.JMHWars.BINARY_ARRAY_FLOATS;
-import static com.github.gbenroscience.sortmix.experiments.JMHWars.INPUT_SIZE;
 import static com.github.gbenroscience.sortmix.experiments.JMHWars.PARTIALLY_SORTED_ARRAY_FLOATS;
 import static com.github.gbenroscience.sortmix.experiments.JMHWars.POS_AND_NEG_RANDOM_FLOATS;
 import static com.github.gbenroscience.sortmix.experiments.JMHWars.RANDOM_FLOATS;
 import static com.github.gbenroscience.sortmix.experiments.JMHWars.REVERSE_SORTED_FLOATS;
 import static com.github.gbenroscience.sortmix.experiments.JMHWars.SORTED_FLOATS;
-import static com.github.gbenroscience.sortmix.experiments.JMHWars.dataType;
 import com.github.gbenroscience.sortmix.util.SortUtils;
 import java.util.Arrays;
 
@@ -59,15 +57,38 @@ public class ModernWittyBucketSort {
         // 1. Find Extremities and Check Sorted State (One pass, O(n))
         double min = array[left];
         double max = array[left];
-        boolean isSorted = true; // Assume sorted until proven otherwise
-        boolean isReverseSorted = true;
+        double v1 = min;      // first unique item
+        double v2 = v1;       // will hold second unique item
+        boolean binaryOnly = true;
+        int countV1 = 1;      // Track occurrences of the first value
+        boolean isSorted = true;         // Assume sorted until proven otherwise
+        boolean isReverseSorted = true;  // Assume reverse sorted until proven otherwise
+
+        // Guard 1: Detect if the initial element is NaN
+        boolean hasNaN = Double.isNaN(min);
 
         for (int i = left + 1; i <= right; i++) {
             double val = array[i];
 
+            // Guard 1 Cont.: Track if any NaNs exist in this range
+            if (!hasNaN && Double.isNaN(val)) {
+                hasNaN = true;
+            }
+            
+            // Fast Binary Detection & Counting
+            if (binaryOnly) {
+                if (val == v1) {
+                    countV1++;
+                } else if (v1 == v2) {
+                    v2 = val; // Found the second unique value
+                } else if (val != v2) {
+                    binaryOnly = false; // Found a third unique value, disable binary mode
+                }
+            }
+
             if (val < min) {
                 min = val;
-                isSorted = false;        // Dropped below global minimum
+                isSorted = false; // Dropped below global minimum
             } else if (val > max) {
                 max = val;
                 isReverseSorted = false; // Spiked above global maximum
@@ -80,6 +101,16 @@ public class ModernWittyBucketSort {
                     isReverseSorted = false;
                 }
             }
+        }
+
+        // Guard 1 Resolution: Handle NaNs gracefully by partitioning them to the far right
+        if (hasNaN) {
+            int nanBoundary = partitionNaNs(array, left, right);
+            // Recurse only on the valid numeric portion remaining on the left
+            if (nanBoundary - left > 1) {
+                sortRecursive(array, left, nanBoundary - 1);
+            }
+            return;
         }
 
         // Early Exit 1: Already Sorted
@@ -99,18 +130,41 @@ public class ModernWittyBucketSort {
             }
             return;
         }
+
         double range = max - min;
         if (range <= 0) {
             return; // Array is already uniform
         }
 
+    
+        // Early Exit 4: True Binary Array Pointer Blitz (O(n) Time, O(1) Memory)
+        if (binaryOnly) {
+            double lowValue = (v1 < v2) ? v1 : v2;
+            double highValue = (v1 < v2) ? v2 : v1;
+
+            // Total occurrences of the higher value can be derived directly
+            int countHigh = len - countV1;
+            if (v1 == highValue) {
+                countHigh = countV1;
+            }
+
+            int highBoundary = (right + 1) - countHigh;
+
+            // Single-pass direct memory overwrite
+            for (int i = left; i < highBoundary; i++) {
+                array[i] = lowValue;
+            }
+            for (int i = highBoundary; i <= right; i++) {
+                array[i] = highValue;
+            }
+            return;
+        }
+
         // 2. Setup Fixed-Size Headers
-        // Using 256 ensures we stay in L1 cache and TLB limits
         int[] count = new int[BUCKET_COUNT];
         int[] offset = new int[BUCKET_COUNT];
 
         // Strength Reduction: Pre-calculate the multiplier for scaling
-        // Index calculation: index = (value - min) * scale
         double scale = (double) (BUCKET_COUNT - 1) / range;
 
         // 3. Counting Pass
@@ -130,7 +184,6 @@ public class ModernWittyBucketSort {
                 int currIdx = offset[b];
                 double val = array[currIdx];
                 int destBucket = getIndex(val, min, scale);
-
                 if (destBucket == b) {
                     offset[b]++;
                     count[b]--;
@@ -140,15 +193,13 @@ public class ModernWittyBucketSort {
                     array[currIdx] = array[targetPos];
                     array[targetPos] = val;
 
-                    // Decrement work for the target bucket, increment its write pointer
                     offset[destBucket]++;
                     count[destBucket]--;
                 }
             }
         }
 
-        // 6. Hierarchical Recursion
-        // Scan the partitioned array for bucket boundaries and recurse
+        // 6. Hierarchical Recursion with Guard 2
         int p = left;
         while (p <= right) {
             int bucketStart = p;
@@ -160,12 +211,42 @@ public class ModernWittyBucketSort {
             }
 
             // Only recurse if the bucket has more than one element
-            if (p - bucketStart > 1) {
-                sortRecursive(array, bucketStart, p - 1);
+            int bucketLen = p - bucketStart;
+            if (bucketLen > 1) {
+                // Guard 2: Prevent Infinite Loop / StackOverflow on large duplicate clusters.
+                // If the first and last elements of the bucket are identical, the entire bucket 
+                // consists of duplicate elements. Recursing it would process the same range infinitely.
+                if (array[bucketStart] != array[p - 1]) {
+                    sortRecursive(array, bucketStart, p - 1);
+                }
             }
         }
     }
 
+    /**
+     * In-place partitioning tool that pushes all NaN values to the end of the
+     * array segment. Matches standard Java sorting conventions where NaNs are
+     * placed last.
+     *
+     * @return the index of the first NaN element.
+     */
+    private static int partitionNaNs(double[] array, int left, int right) {
+        int i = left;
+        int j = right;
+        while (i <= j) {
+            if (Double.isNaN(array[i])) {
+                // Swap the NaN with the element at index j
+                double temp = array[i];
+                array[i] = array[j];
+                array[j] = temp;
+                j--;
+            } else {
+                i++;
+            }
+        }
+        return i; // Everything from this index to 'right' is now cleanly a NaN
+    }
+ 
     /**
      * Map value to a bucket index using pre-calculated scale.
      */
@@ -220,13 +301,13 @@ public class ModernWittyBucketSort {
         }
 
         final double[] md = masterData;
+        if (arraySize < 50_000_000) {
+            runBenchmark("AdvancedWittyBucketSort", () -> AdvancedWittyBucketSort.sort(clone(md)));
 
-        runBenchmark("AdvancedWittyBucketSort", () -> AdvancedWittyBucketSort.sort(clone(md)));
-        runBenchmark("QuickSort", () -> QuickSort.sort(clone(md)));
-        if (arraySize < 100_000_000) {
             runBenchmark("MergeSort", () -> MergeSort.sort(clone(md)));
             runBenchmark("HeapSort", () -> HeapSort.sort(clone(md)));
         }
+        runBenchmark("QuickSort", () -> QuickSort.sort(clone(md)));
         runBenchmark("java.util.Arrays.sort", () -> Arrays.sort(clone(md)));
         runBenchmark("ModernWittyBucketSort", () -> sort(clone(md)));
 
@@ -242,17 +323,16 @@ public class ModernWittyBucketSort {
             System.out.println("==========".repeat(10));
             System.out.println("Benchmarking with " + n + " elements...\n");
             
-            
             runner(n, JMHWars.POS_AND_NEG_RANDOM_FLOATS);
             runner(n, JMHWars.RANDOM_FLOATS);
             runner(n, JMHWars.REVERSE_SORTED_FLOATS);
             runner(n, JMHWars.SORTED_FLOATS);
-            runner(n, JMHWars.BINARY_ARRAY_FLOATS);
             runner(n, JMHWars.PARTIALLY_SORTED_ARRAY_FLOATS);
+             
+            runner(n, JMHWars.BINARY_ARRAY_FLOATS);
             System.out.println("Done benchmarking with " + n + " elements...\n");
             System.out.println("==========".repeat(10));
-            
-             
+
         }
 
     }

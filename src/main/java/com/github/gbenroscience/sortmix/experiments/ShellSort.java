@@ -92,11 +92,11 @@ public class ShellSort {
     
     public static void main(String args[]) {
 
-        int len = 100;//17907709; //8940705;
+        int len = 10000000;//17907709; //8940705;
         //double arr[] = new double[80];
         //double arr[] = {1.0000000000001,1.00000000000011,1.00000000000012,1.000000000000115,1.000000000000113,1.000000000000121,};
     double arr[] = BenchMarker.initArrayPos$NegRandomFloats(len);
-    printArray("Before sorting", arr);
+ 
         double start = System.nanoTime();
          ShellSort.sort(arr);
          
@@ -109,7 +109,7 @@ public class ShellSort {
          else{
              System.out.println("Not Sorted");
          }
-     printArray("After sorting", arr);
+    
        //ty
     }//end method
 }
