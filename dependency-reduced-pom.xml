@@ -38,9 +38,13 @@
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
+        <version>3.13.0</version>
         <configuration>
-          <release>24</release>
+          <release>${maven.compiler.release}</release>
+          <compilerArgs>
+            <arg>--add-modules</arg>
+            <arg>jdk.incubator.vector</arg>
+          </compilerArgs>
           <annotationProcessorPaths>
             <path>
               <groupId>org.openjdk.jmh</groupId>
@@ -48,6 +52,23 @@
               <version>1.37</version>
             </path>
           </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.3.1</version>
+        <configuration>
+          <argLine>--add-modules=jdk.incubator.vector
+                        --enable-native-access=ALL-UNNAMED
+                        --add-opens=java.base/java.nio=ALL-UNNAMED
+                        --add-opens=java.base/java.util=ALL-UNNAMED
+                        --add-opens=java.base/java.lang=ALL-UNNAMED
+                        --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED
+                        --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+                        -Dio.netty.tryReflectionSetAccessible=true
+                        -Darrow.allocation.manager.type=Unsafe
+                        -Darrow.allocation.manager.type=Direct
+                        --sun-misc-unsafe-memory-access=allow</argLine>
         </configuration>
       </plugin>
     </plugins>

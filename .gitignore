@@ -1,6 +1,6 @@
 .idea/
 *.iml
-target
+target/
 mvn-keys
 .DS_Store
 src/.DS_Store
